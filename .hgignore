@@ -1,10 +1,7 @@
 syntax: glob
-arch-*
+
 *.dat
 *.o
 *.out
-*.pyc
 *.swp
 .Apple*
-config/BuildSystem
-conf/exafmmvariables

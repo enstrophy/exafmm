@@ -233,7 +233,7 @@ void Evaluator<equation>::timeKernels() {                       // Time all kern
   timeM2P = stopTimer("M2P kernel   ") / 1000;                  // Stop timer
 }
 
-#ifdef HAVE_QUARK
+#if QUARK
 template<Equation equation>
 inline void interactQuark(Quark *quark) {
   Evaluator<equation> *E;

@@ -97,7 +97,7 @@ private:
 #endif
   }
 
-#ifdef HAVE_QUARK
+#if QUARK
   inline void interact(C_iter Ci, C_iter Cj, Quark *quark);     //!< interact() function using QUARK
 #endif
 
@@ -123,7 +123,7 @@ private:
 //! Traverse a pair of trees using a queue
   void traverseQueue(Pair pair) {
     PairQueue pairQueue;                                        // Queue of interacting cell pairs
-#ifdef HAVE_QUARK
+#if QUARK
     Quark *quark = QUARK_New(4);                                // Initialize QUARK object
 #endif
     pairQueue.push(pair);                                       // Push pair to queue
@@ -141,7 +141,7 @@ private:
           interact(pair.first,Cj,pairQueue);                    //    Calculate interaction betwen cells
         }                                                       //   End loop over second cell's children
       }                                                         //  End if for which cell to split
-#if 0
+#if QUARK
       if( pairQueue.size() > 100 ) {                            //  When queue size reaches threshold
         while( !pairQueue.empty() ) {                           //   While dual traversal queue is not empty
           pair = pairQueue.front();                             //    Get interaction pair from front of queue
@@ -151,10 +151,10 @@ private:
       }                                                         //  End if for queue size
 #endif
     }                                                           // End while loop for dual traversal queue
-#ifdef HAVE_QUARK
+#if QUARK
     QUARK_Delete(quark);                                        // Delete QUARK object 
-#endif
     writeTrace();                                               // Write event trace to file
+#endif
   }
 
 //! Get range of periodic images

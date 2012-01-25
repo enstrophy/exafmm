@@ -33,15 +33,15 @@ THE SOFTWARE.
 #include <list>
 #include <map>
 #include <omp.h>
-#ifdef HAVE_QUARK
-  #include "quark.h"
-#endif
 #include <queue>
 #include <stack>
 #include <string>
 #include <utility>
 #include <vector>
 #include "vec.h"                                                //!< My vector type with operator overloading
+#if QUARK
+#include "quark.h"
+#endif
 
 typedef unsigned           bigint;                              //!< Big integer type
 typedef float              real;                                //!< Real number type on CPU
@@ -66,8 +66,8 @@ extern real THETA;                                              //!< Multipole a
 extern vect Xperiodic;                                          //!< Coordinate offset of periodic image
 #endif
 
-const int  P        = 3;                                        //!< Order of expansions
-const int  NCRIT    = 10;                                       //!< Number of bodies per cell
+const int  P        = 10;                                       //!< Order of expansions
+const int  NCRIT    = 100;                                      //!< Number of bodies per cell
 const int  MAXBODY  = 200000;                                   //!< Maximum number of bodies per GPU kernel
 const int  MAXCELL  = 10000000;                                 //!< Maximum number of bodies/coefs in cell per GPU kernel
 const real CLET     = 2;                                        //!< LET opening critetia

@@ -1,0 +1,12 @@
+syntax: glob
+
+*.a
+*.so
+*.dat
+*.o
+*.out
+*.dot
+*.svg
+*.swp
+*.plist
+.Apple*

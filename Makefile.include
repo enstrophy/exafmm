@@ -1,0 +1,105 @@
+.SUFFIXES: .cxx .cu .o
+.PHONY: docs
+## ExaFMM path
+EXAFMM_INCLUDE_PATH = ../include
+EXAFMM_LIBRARY_PATH = ../lib
+
+### CUDA path
+CUDA_INSTALL_PATH = /usr/local/cuda
+CUDA_SDK_PATH = /usr/local/cuda_sdk/C
+
+### VTK path
+VTK_INCLUDE_PATH = /usr/include/vtk-5.8
+VTK_LIBRARY_PATH = /usr/lib/vtk-5.8
+
+### choose CPU or GPU
+DEVICE	= CPU
+#DEVICE	= GPU
+
+### choose Cartesian or spherical expansion
+EXPAND	= Cartesian
+#EXPAND	= Spherical
+
+### GCC compiler
+#CXX	= mpicxx -ggdb3 -Wall -Wextra -Wshadow -Wuninitialized -O3 -ffast-math -fopenmp -funroll-loops -fforce-addr -fbounds-check -DSSE
+CXX	= g++ -ggdb3 -Wall -Wextra -Wshadow -Wuninitialized -O3 -ffast-math -funroll-loops -fforce-addr -fbounds-check -DSSE
+### Intel compiler
+#CXX	= mpicxx -Wall -xHOST -O3 -openmp -funroll-loops -finline-functions -ansi-alias -DSSE
+### BG/P compiler
+#CXX	= mpixlcxx_r -qarch=450 -qtune=450 -qsmp=omp -O3
+### TAU compiler
+#CXX	= tau_cxx.sh -ggdb3 -Wall -Wextra -Wshadow -Wuninitialized -O3 -ffast-math -fopenmp -funroll-loops -fforce-addr -fbounds-check
+
+### CUDA compiler
+NVCC	= nvcc --compiler-bindir=/usr/bin/g++-4.4 -Xcompiler -fopenmp --ptxas-options=-v\
+	-O3 -use_fast_math -arch=sm_21\
+	-I$(EXAFMM_INCLUDE_PATH) -I$(CUDA_INSTALL_PATH)/include -I$(CUDA_SDK_PATH)/common/inc
+
+### Base flags
+CXX	+= -I$(EXAFMM_INCLUDE_PATH)
+LFLAGS	= -L$(EXAFMM_LIBRARY_PATH)
+LFLAGS	+= -DCOMkernel
+LFLAGS	+= -DERROR_OPT
+LFLAGS	+= -DUSE_RMAX
+LFLAGS	+= -DUSE_BMAX
+LFLAGS	+= -DCOMcenter
+LFLAGS	+= -DDUAL
+LFLAGS	+= -DIneJ
+#LFLAGS	+= -DCOUNT
+#LFLAGS	+= -DHYBRID
+#LFLAGS	+= -DTREECODE
+
+# new flags
+# (1) support command line options with serial_argv.cxx
+LFLAGS += -DCMDLINE_ARGS
+# (3) implement mutual (some fixes and parallelization)
+LFLAGS += -DIMPL_MUTUAL
+# (4) new simdization including simdizing P2P(C_iter) and avx
+# meant to supersede -DSSE flag
+LFLAGS += -DSIMDIZATION -msse4.2
+#LFLAGS += -mavx
+# (5) parallelize tree building and other phases
+LFLAGS += -DPARALLEL_EVERYTHING
+
+### OPENMP flags
+#LFLAGS += -DOPENMP
+
+### MassiveThreads flags (remove -fopenmp and -DOPENMP from command line)
+#MTH_DIR:=/home/tau/parallel/sys
+#LFLAGS	+= -std=c++0x -DMTHREAD -DMTHREADS -I$(MTH_DIR)/include -L$(MTH_DIR)/lib -Wl,-R$(MTH_DIR)/lib -lmyth -lpthread -ldl
+
+### PAPI flags
+#LFLAGS	+= -DPAPI -lpapi
+
+### VTK flags
+CXX	+= -I$(VTK_INCLUDE_PATH)
+VFLAGS	= -L$(VTK_LIBRARY_PATH) -lvtkRendering -lvtkGraphics -lvtkFiltering -lvtkViews -lvtkCommon -lvtkWidgets -lvtkIO -DVTK
+
+ifeq ($(DEVICE),GPU)
+### CUDA flags
+LFLAGS  += -L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_SDK_PATH)/lib -lcuda -lcudart -lcutil_x86_64 -lstdc++ -ldl -lm
+endif
+
+.cxx.o  :
+	$(CXX) -c $? -o $@ $(LFLAGS)
+.cu.o   :
+	$(NVCC) -c $? -o $@ $(LFLAGS)
+
+help:
+	@make -C .. help
+clean:
+	@make -C .. clean
+cleandat:
+	@make -C .. cleandat
+cleanlib:
+	@make -C .. cleanlib
+cleanall:
+	@make -C .. cleanall
+commit:
+	@make -C .. commit
+save:
+	@make -C .. save
+revert:
+	@make -C .. revert
+docs:
+	@make -C .. docs

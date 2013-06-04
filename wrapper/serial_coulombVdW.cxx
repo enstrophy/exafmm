@@ -120,6 +120,25 @@ extern "C" void FMMcalccoulomb_ij(int ni, double* xi, double* qi, double* fi,
     break;
   }
 #endif
+  double fc[3];
+  for( int d=0; d!=3; ++d ) fc[d]=0;
+  for( int i=0; i!=ni; ++i ) { 
+    for( int d=0; d!=3; ++d ) { 
+      fc[d] += qi[i] * xi[3*i+d];
+    }   
+  }
+  if( tblno == 0 ) { 
+    for( int i=0; i!=ni; ++i ) { 
+      for( int d=0; d!=3; ++d ) {
+        fi[3*i+d] -= 4.0 * M_PI * qi[i] * fc[d] / (3.0 * size * size * size);
+      }
+    }   
+  } else {
+    for( int i=0; i!=ni; ++i ) { 
+      fi[3*i+0] += M_PI / (3.0 * size * size * size)
+                * (fc[0] * fc[0] + fc[1] * fc[1] + fc[2] * fc[2]) / ni;
+    }   
+  }
 }
 
 extern "C" void FMMcalcvdw_ij(int ni, double* xi, int* atypei, double* fi,
@@ -269,6 +288,18 @@ extern "C" void fmmcalccoulomb_ij_exlist_(int *ni, double* xi, double* qi, doubl
   FMMcalccoulomb_ij(*ni,xi,qi,fi,*nj,xj,qj,*rscale,*tblno-6,*size,*periodicflag);
   switch (*tblno-6) {
   case 0 :
+#if 1
+    for( int i=0,ic=0; i<*ni; i++ ) {
+      for( int j=0; j<numex[i]; j++,ic++ ) natex[ic]--;
+    }
+    MR3calccoulomb_nlist_ij_host(*ni,xi,qi,fi,*nj,xj,qj,
+                                *rscale,*tblno-6,*size,*periodicflag&3,numex,natex,-1.0);
+//    MR3calccoulomb_nlist_ij_emu(*ni,xi,qi,fi,*nj,xj,qj,
+//			        *rscale,*tblno-6,*size,*periodicflag&3,numex,natex,-1.0);
+    for( int i=0,ic=0; i<*ni; i++ ) {
+      for( int j=0; j<numex[i]; j++,ic++ ) natex[ic]++;
+    }
+#else
     for( int i=0,ic=0; i!=*ni; ++i ) {
       double Fx = 0, Fy = 0, Fz = 0;
       for( int in=0; in!=numex[i]; in++,ic++ ) {
@@ -291,6 +322,7 @@ extern "C" void fmmcalccoulomb_ij_exlist_(int *ni, double* xi, double* qi, doubl
       fi[3*i+1] -= qi[i] * Fy;
       fi[3*i+2] -= qi[i] * Fz;
     }
+#endif
     break;
   case 1:
     double Total = 0;
@@ -338,9 +370,15 @@ extern "C" void fmmcalcvdw_ij_exlist_(int *ni, double* xi, int* atypei, double* 
   for( int i=0,ic=0; i<*ni; i++ ) {
     for( int j=0; j<numex[i]; j++,ic++ ) natex[ic]--;
   }
+#if 0
+  MR3calcvdw_ij(*ni,xi,atypei,fi,*nj,xj,atypej,*nat,gscale,rscale,*tblno,*size,*periodicflag);
+  MR3calcvdw_nlist_ij_emu(*ni,xi,atypei,fi,*nj,xj,atypej,*nat,gscale,rscale,*tblno,
+                          *size,(*periodicflag & 3),numex,natex,-1.0);
+#else
   FMMcalcvdw_ij(*ni,xi,atypei,fi,*nj,xj,atypej,*nat,gscale,rscale,*tblno,*size,*periodicflag);
-  //MR3calcvdw_nlist_ij_host(*ni,xi,atypei,fi,*nj,xj,atypej,*nat,gscale,rscale,*tblno,
-  //                        *size,(*periodicflag & 3),numex,natex,-1.0);
+  MR3calcvdw_nlist_ij_host(*ni,xi,atypei,fi,*nj,xj,atypej,*nat,gscale,rscale,*tblno,
+                          *size,(*periodicflag & 3),numex,natex,-1.0);
+#endif
   for( int i=0; i<*ni; i++ ) atypei[i]++;
   for( int i=0; i<*nj; i++ ) atypej[i]++;
   for( int i=0,ic=0; i<*ni; i++ ) {

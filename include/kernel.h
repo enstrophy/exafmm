@@ -198,8 +198,8 @@ public:
   void setDomain(Bodies &bodies, vect x0=0, real r0=M_PI) {
     vect xmin,xmax;                                             // Min,Max of domain
     for( int d=0; d!=3; ++d ) {                                 //  Loop over each dimension
-      xmin[d] = X0[d] - R0;                                     //   Initialize xmin
-      xmax[d] = X0[d] + R0;                                     //   Initialize xmax
+      xmin[d] = x0[d] - r0;                                     //   Initialize xmin
+      xmax[d] = x0[d] + r0;                                     //   Initialize xmax
     }                                                           //  End loop over each dimension
     for( B_iter B=bodies.begin(); B!=bodies.end(); ++B ) {      // Loop over bodies
       for( int d=0; d!=3; ++d ) {                               //  Loop over each dimension

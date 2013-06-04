@@ -94,7 +94,7 @@ __device__ void evalLocal(gpureal *YnmShrd, gpureal rho,        // Evaluate sing
   gpureal x = cosf(alpha);                                      // x = cos(alpha)
   gpureal y = sinf(alpha);                                      // y = sin(alpha)
   gpureal rho_1 = 1 / rho;                                      // 1 / rho
-  for( int l=threadIdx.x; l<(2*P+1)*P/2; l+=THREADS ) {         // Loop over coefficients in Ynm
+  for( int l=threadIdx.x; l<(2*P+1)*P; l+=THREADS ) {           // Loop over coefficients in Ynm
     gpureal fact = 1;                                           //  Initialize 2 * m + 1
     gpureal pn = 1;                                             //  Initialize Legendre polynomial Pn
     gpureal rhom = rho_1;                                       //  Initialize rho^(-m-1)

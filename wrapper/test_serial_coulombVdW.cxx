@@ -2,8 +2,6 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-const float R2MIN    = 0.0001;                                   //!< Minimum value for L-J R^2
-const float R2MAX    = 100.0;                                    //!< Maximum value for L-J R^2
 extern "C" {
 #include "md.h"
 #include "vtgrapeproto.h"
@@ -25,7 +23,7 @@ int main() {
 #else
   const int N = 10000;
   const int nat = 16;
-  const double size = 20;
+  const double size = 2;
 #endif
   double *xi     = new double [3*N];
   double *qi     = new double [N];
@@ -43,7 +41,7 @@ int main() {
   double *fgscale = new double [64*64];
   int *numex  = new int [N];
   int *natex  = new int [N];
-//  MR3init();
+  MR3init();
 
 #ifdef DATAFILE
   std::fstream fid("datafile",std::ios::in);
@@ -56,6 +54,9 @@ int main() {
   }
   fid.close();
   for( int i=0; i<N; i++ ) {
+//    xi[3*i+0] = drand48() * size - size/2;
+//    xi[3*i+1] = drand48() * size - size/2;
+//    xi[3*i+2] = drand48() * size - size/2;
     xj[3*i+0] = xi[3*i+0];
     xj[3*i+1] = xi[3*i+1];
     xj[3*i+2] = xi[3*i+2];
@@ -124,7 +125,7 @@ int main() {
 
   FMMcalccoulomb_ij(N, xi, qi, pi, N, xj, qj, 0.0, 1, size, 0);
   FMMcalccoulomb_ij(N, xi, qi, fi, N, xj, qj, 0.0, 0, size, 0);
-#if 0
+#if 1
   MR3calccoulomb_ij_host(N, xi, qi, pd, N, xj, qj, 1.0, 1, size, 2);
   MR3calccoulomb_ij_host(N, xi, qi, fd, N, xj, qj, 1.0, 0, size, 2);
 #else
@@ -149,6 +150,22 @@ int main() {
     fd[3*i+2] += qi[i] * Fz;
   }
 #endif
+  double fc[3];
+  for( int d=0; d<3; ++d ) fc[d]=0;
+  for( int i=0; i<N; ++i ) {
+    for( int d=0; d<3; ++d ) {
+      fc[d] += qi[i] * xi[3*i+d];
+    }
+  }
+  for( int i=0; i<N; ++i ) {
+    pd[3*i+0] += 2.0 * M_PI / (3.0 * size * size * size)
+              * (fc[0] * fc[0] + fc[1] * fc[1] + fc[2] * fc[2]) / N;
+  }
+  for( int i=0; i<N; ++i ) {
+    for( int d=0; d<3; ++d ) {
+      fd[3*i+d] -= 4.0 * M_PI * qi[i] * fc[d] / (3.0 * size * size * size);
+    }
+  }
   double Pd = 0, Pn = 0, Fd = 0, Fn = 0;
   for( int i=0; i<N; i++ ) {
     pd[3*i+0] *= 0.5;
@@ -168,7 +185,7 @@ int main() {
 
   FMMcalcvdw_ij(N,xi,atypei,pi,N,xj,atypej,nat,gscale,rscale,3,size,0);
   FMMcalcvdw_ij(N,xi,atypei,fi,N,xj,atypej,nat,fgscale,frscale,2,size,0);
-#if 0
+#if 1
   MR3calcvdw_ij(N,xi,atypei,pd,N,xj,atypej,nat,gscale,rscale,3,size,0);
   MR3calcvdw_ij(N,xi,atypei,fd,N,xj,atypej,nat,fgscale,frscale,2,size,0);
 #else

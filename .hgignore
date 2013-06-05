@@ -1,0 +1,8 @@
+syntax: glob
+
+*.a
+*.dat
+*.g80emu
+*.o
+*.out
+*.so
